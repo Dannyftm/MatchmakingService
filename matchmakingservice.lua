@@ -1929,19 +1929,21 @@ function MatchmakingService:StartGame(gameId: string, joinable: boolean): boolea
 	return true
 end
 
-game:BindToClose(function()
-	CLOSED = true
-	local success, errorMessage = pcall(function()
-		local mainId = getFromMemory(mainMemory, "MainJobId", 3)
-		if mainId[1] == game.JobId then
-			mainMemory:RemoveAsync("MainJobId")
+if not game:GetService("RunService"):IsStudio() then
+	game:BindToClose(function()
+		CLOSED = true
+		local success, errorMessage = pcall(function()
+			local mainId = getFromMemory(mainMemory, "MainJobId", 3)
+			if mainId[1] == game.JobId then
+				mainMemory:RemoveAsync("MainJobId")
+			end
+		end)
+
+		local singleton = MatchmakingService.GetSingleton()
+		if singleton.IsGameServer then
+			singleton:RemoveGame()
 		end
 	end)
-
-	local singleton = MatchmakingService.GetSingleton()
-	if singleton.IsGameServer then
-		singleton:RemoveGame()
-	end
-end)
+end
 
 return MatchmakingService
